@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://100.10.10.1 http://10.1.10.1 http://100.10.10.3:8080 http://100.10.10.4:8080; connect-src 'self' http://100.10.10.1 http://10.1.10.1 http://100.10.10.3:8080 http://100.10.10.4:8080;">
+    <title>Router Kawaii 📶</title>
+    <link rel="stylesheet" href="output.css">
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
+        
+        /* Frameless window drag */
+        .title-bar { -webkit-app-region: drag; }
+        .title-bar button { -webkit-app-region: no-drag; }
+        
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Webview styling */
+        webview {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 20px;
+        }
+
+        /* Router button colors */
+        .router-btn-pink { background: linear-gradient(135deg, #ff9a9e, #fecfef) !important; }
+        .router-btn-blue { background: linear-gradient(135deg, #a1c4fd, #c2e9fb) !important; }
+        .router-btn-green { background: linear-gradient(135deg, #84fab0, #8fd3f4) !important; }
+        .router-btn-orange { background: linear-gradient(135deg, #ffecd2, #fcb69f) !important; }
+        .router-btn-purple { background: linear-gradient(135deg, #c471f5, #fa71cd) !important; }
+        .router-btn-cyan { background: linear-gradient(135deg, #89f7fe, #66a6ff) !important; }
+        
+        /* Grey background theme */
+        .bg-grey-theme {
+            background: linear-gradient(135deg, #2d3436 0%, #485460 50%, #1e272e 100%) !important;
+        }
+        
+        /* LED status indicators */
+        .led-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            box-shadow: 0 0 6px currentColor;
+        }
+        .led-checking {
+            background-color: #9ca3af;
+            animation: pulse 1.5s infinite;
+        }
+        .led-online {
+            background-color: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+        }
+        .led-offline {
+            background-color: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-grey-theme min-h-screen overflow-hidden">
+    <!-- Custom Title Bar -->
+    <div class="title-bar h-10 flex items-center justify-between px-4 bg-black/20">
+        <div class="flex items-center gap-2">
+            <span class="text-xl">🏠</span>
+            <span class="text-white font-semibold text-sm">Syed Alijah Home</span>
+        </div>
+        <div class="flex gap-1">
+            <button onclick="minimizeWindow()" class="w-8 h-8 rounded-full bg-yellow-400 hover:bg-yellow-300 flex items-center justify-center transition">
+                <span class="text-yellow-800 text-xs">─</span>
+            </button>
+            <button onclick="maximizeWindow()" class="w-8 h-8 rounded-full bg-green-400 hover:bg-green-300 flex items-center justify-center transition">
+                <span class="text-green-800 text-xs">□</span>
+            </button>
+            <button onclick="closeWindow()" class="w-8 h-8 rounded-full bg-red-400 hover:bg-red-300 flex items-center justify-center transition">
+                <span class="text-red-800 text-xs">✕</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex h-[calc(100vh-40px)]">
+        <!-- Sidebar -->
+        <nav class="w-20 glass m-3 mr-0 rounded-3xl flex flex-col items-center py-4 gap-3">
+            <button onclick="showTab('dashboard')" id="btn-dashboard" class="nav-btn active w-14 h-14 rounded-2xl bg-white/30 hover:bg-white/50 flex items-center justify-center transition-all hover:scale-110" title="Dashboard">
+                <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+            </button>
+            
+            <div class="w-10 h-px bg-white/30 my-1"></div>
+            
+            <!-- Router Buttons -->
+            <button onclick="showTab('dlink')" id="btn-dlink" class="nav-btn router-btn-pink w-14 h-14 rounded-2xl hover:scale-110 flex flex-col items-center justify-center transition-all shadow-lg" title="D-Link">
+                <svg class="w-5 h-5 text-pink-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                <span class="text-[9px] font-bold text-pink-800 mt-0.5">D-Link</span>
+            </button>
+            <button onclick="showTab('huawei')" id="btn-huawei" class="nav-btn router-btn-blue w-14 h-14 rounded-2xl hover:scale-110 flex flex-col items-center justify-center transition-all shadow-lg" title="HUAWEI">
+                <svg class="w-5 h-5 text-blue-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                <span class="text-[9px] font-bold text-blue-800 mt-0.5">HUAWEI</span>
+            </button>
+            <button onclick="showTab('tenda1')" id="btn-tenda1" class="nav-btn router-btn-green w-14 h-14 rounded-2xl hover:scale-110 flex flex-col items-center justify-center transition-all shadow-lg" title="Tenda">
+                <svg class="w-5 h-5 text-teal-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                <span class="text-[9px] font-bold text-teal-800 mt-0.5">Tenda</span>
+            </button>
+            <button onclick="showTab('tenda2')" id="btn-tenda2" class="nav-btn router-btn-orange w-14 h-14 rounded-2xl hover:scale-110 flex flex-col items-center justify-center transition-all shadow-lg" title="Tenda">
+                <svg class="w-5 h-5 text-orange-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                <span class="text-[9px] font-bold text-orange-800 mt-0.5">Tenda</span>
+            </button>
+            
+            <div class="flex-1"></div>
+            
+            <button onclick="showTab('settings')" id="btn-settings" class="nav-btn w-14 h-14 rounded-2xl bg-white/20 hover:bg-white/40 flex items-center justify-center transition-all hover:scale-110" title="Settings">
+                <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+            </button>
+        </nav>
+
+        <!-- Content Area -->
+        <main class="flex-1 p-3 overflow-hidden">
+            <!-- Dashboard Tab -->
+            <div id="tab-dashboard" class="tab-content h-full">
+                <div class="glass rounded-3xl h-full p-6 overflow-y-auto">
+                    <h1 class="text-3xl font-bold text-white mb-2">Welcome Back Syed! 💕</h1>
+                    <p class="text-white/70 mb-6">Multi-Router Control Center</p>
+                    
+                    <!-- Router Cards -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div onclick="showTab('dlink')" class="glass rounded-2xl p-5 cursor-pointer hover:scale-105 transition-all router-btn-pink relative">
+                            <div id="led-dlink" class="led-indicator led-checking"></div>
+                            <div class="text-center">
+                                <span class="text-4xl">📡</span>
+                                <h3 class="text-pink-800 font-bold mt-2">D-Link</h3>
+                                <p class="text-pink-700 text-xs">10.1.10.1</p>
+                            </div>
+                        </div>
+                        <div onclick="showTab('huawei')" class="glass rounded-2xl p-5 cursor-pointer hover:scale-105 transition-all router-btn-blue relative">
+                            <div id="led-huawei" class="led-indicator led-checking"></div>
+                            <div class="text-center">
+                                <span class="text-4xl">📶</span>
+                                <h3 class="text-blue-800 font-bold mt-2">HUAWEI</h3>
+                                <p class="text-blue-700 text-xs">100.10.10.1</p>
+                            </div>
+                        </div>
+                        <div onclick="showTab('tenda1')" class="glass rounded-2xl p-5 cursor-pointer hover:scale-105 transition-all router-btn-green relative">
+                            <div id="led-tenda1" class="led-indicator led-checking"></div>
+                            <div class="text-center">
+                                <span class="text-4xl">📶</span>
+                                <h3 class="text-teal-800 font-bold mt-2">Tenda</h3>
+                                <p class="text-teal-700 text-xs">100.10.10.3:8080</p>
+                            </div>
+                        </div>
+                        <div onclick="showTab('tenda2')" class="glass rounded-2xl p-5 cursor-pointer hover:scale-105 transition-all router-btn-orange relative">
+                            <div id="led-tenda2" class="led-indicator led-checking"></div>
+                            <div class="text-center">
+                                <span class="text-4xl">📶</span>
+                                <h3 class="text-orange-800 font-bold mt-2">Tenda</h3>
+                                <p class="text-orange-700 text-xs">100.10.10.4:8080</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="glass rounded-2xl p-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-green-400/30 flex items-center justify-center">
+                                    <span class="text-2xl">✅</span>
+                                </div>
+                                <div>
+                                    <p class="text-white/60 text-sm">Status</p>
+                                    <p id="router-status-count" class="text-white font-bold">Checking...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-2xl p-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-cyan-400/30 flex items-center justify-center">
+                                    <span class="text-2xl">⬇️</span>
+                                </div>
+                                <div>
+                                    <p class="text-white/60 text-sm">Download</p>
+                                    <p class="text-white font-bold">120 Mbps</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-2xl p-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-purple-400/30 flex items-center justify-center">
+                                    <span class="text-2xl">⬆️</span>
+                                </div>
+                                <div>
+                                    <p class="text-white/60 text-sm">Upload</p>
+                                    <p class="text-white font-bold">120 Mbps</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- D-Link Router Tab -->
+            <div id="tab-dlink" class="tab-content h-full hidden">
+                <div class="glass rounded-3xl h-full p-4 flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl router-btn-pink flex items-center justify-center">
+                                <span class="text-xl">📡</span>
+                            </div>
+                            <div>
+                                <h2 class="text-white font-bold">D-Link Router</h2>
+                                <p class="text-white/60 text-xs">10.1.10.1</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="fillPassword('dlink')" class="px-4 py-2 bg-pink-500/80 hover:bg-pink-500 rounded-xl text-white text-sm transition flex items-center gap-1">🔑 Fill Password</button>
+                            <button onclick="reloadRouter('dlink')" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition">🔄 Reload</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 rounded-2xl overflow-hidden bg-white">
+                        <webview id="webview-dlink" src="http://10.1.10.1" class="w-full h-full"></webview>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HUAWEI Router Tab -->
+            <div id="tab-huawei" class="tab-content h-full hidden">
+                <div class="glass rounded-3xl h-full p-4 flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl router-btn-blue flex items-center justify-center">
+                                <span class="text-xl">📶</span>
+                            </div>
+                            <div>
+                                <h2 class="text-white font-bold">HUAWEI Router</h2>
+                                <p class="text-white/60 text-xs">100.10.10.1</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="fillPassword('huawei')" class="px-4 py-2 bg-blue-500/80 hover:bg-blue-500 rounded-xl text-white text-sm transition flex items-center gap-1">🔑 Fill Password</button>
+                            <button onclick="reloadRouter('huawei')" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition">🔄 Reload</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 rounded-2xl overflow-hidden bg-white">
+                        <webview id="webview-huawei" src="http://100.10.10.1" class="w-full h-full"></webview>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tenda 1 Router Tab -->
+            <div id="tab-tenda1" class="tab-content h-full hidden">
+                <div class="glass rounded-3xl h-full p-4 flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl router-btn-green flex items-center justify-center">
+                                <span class="text-xl">📶</span>
+                            </div>
+                            <div>
+                                <h2 class="text-white font-bold">Tenda Router</h2>
+                                <p class="text-white/60 text-xs">100.10.10.3:8080</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="fillPassword('tenda1')" class="px-4 py-2 bg-green-500/80 hover:bg-green-500 rounded-xl text-white text-sm transition flex items-center gap-1">🔑 Fill Password</button>
+                            <button onclick="reloadRouter('tenda1')" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition">🔄 Reload</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 rounded-2xl overflow-hidden bg-white">
+                        <webview id="webview-tenda1" src="http://100.10.10.3:8080" class="w-full h-full"></webview>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tenda 2 Router Tab -->
+            <div id="tab-tenda2" class="tab-content h-full hidden">
+                <div class="glass rounded-3xl h-full p-4 flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl router-btn-orange flex items-center justify-center">
+                                <span class="text-xl">📶</span>
+                            </div>
+                            <div>
+                                <h2 class="text-white font-bold">Tenda Router</h2>
+                                <p class="text-white/60 text-xs">100.10.10.4:8080</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="fillPassword('tenda2')" class="px-4 py-2 bg-orange-500/80 hover:bg-orange-500 rounded-xl text-white text-sm transition flex items-center gap-1">🔑 Fill Password</button>
+                            <button onclick="reloadRouter('tenda2')" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition">🔄 Reload</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 rounded-2xl overflow-hidden bg-white">
+                        <webview id="webview-tenda2" src="http://100.10.10.4:8080" class="w-full h-full"></webview>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="tab-settings" class="tab-content h-full hidden">
+                <div class="glass rounded-3xl h-full p-6 overflow-y-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-2xl font-bold text-white">Router Settings ⚙️</h2>
+                        <button id="toggle-passwords" class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition flex items-center gap-2">
+                            <span id="toggle-icon">👁️</span> <span id="toggle-text">Show Passwords</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Router Info (Read-only) -->
+                    <div class="space-y-4">
+                        <div class="glass rounded-2xl p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 rounded-xl router-btn-pink flex items-center justify-center">
+                                    <span class="text-xl">📡</span>
+                                </div>
+                                <h3 class="text-white font-bold">D-Link Router</h3>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div><span class="text-white/60">IP:</span> <span class="text-white">10.1.10.1</span></div>
+                                <div><span class="text-white/60">Password:</span> <span class="text-white password-field">••••••••</span><span class="text-white password-value hidden">pxshr3ws</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass rounded-2xl p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 rounded-xl router-btn-blue flex items-center justify-center">
+                                    <span class="text-xl">📶</span>
+                                </div>
+                                <h3 class="text-white font-bold">HUAWEI Router</h3>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div><span class="text-white/60">IP:</span> <span class="text-white">100.10.10.1</span></div>
+                                <div><span class="text-white/60">Username:</span> <span class="text-white">telecomadmin</span></div>
+                                <div><span class="text-white/60">Password:</span> <span class="text-white password-field">••••••••</span><span class="text-white password-value hidden">Syed#Alijah</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass rounded-2xl p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 rounded-xl router-btn-green flex items-center justify-center">
+                                    <span class="text-xl">📶</span>
+                                </div>
+                                <h3 class="text-white font-bold">Tenda Router</h3>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div><span class="text-white/60">IP:</span> <span class="text-white">100.10.10.3:8080</span></div>
+                                <div><span class="text-white/60">Password:</span> <span class="text-white password-field">••••••••</span><span class="text-white password-value hidden">Tenda0</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass rounded-2xl p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 rounded-xl router-btn-orange flex items-center justify-center">
+                                    <span class="text-xl">📶</span>
+                                </div>
+                                <h3 class="text-white font-bold">Tenda Router</h3>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div><span class="text-white/60">IP:</span> <span class="text-white">100.10.10.4:8080</span></div>
+                                <div><span class="text-white/60">Password:</span> <span class="text-white password-field">••••••••</span><span class="text-white password-value hidden">Tenda0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 glass rounded-2xl p-4">
+                        <h3 class="text-white font-semibold mb-2">💡 Note</h3>
+                        <p class="text-white/60 text-sm">To change router credentials, edit the source code in index.html</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ============================================
+        // ROUTER CREDENTIALS (Static configuration)
+        // ============================================
+        
+        // To change credentials, edit the values here:
+        const CREDENTIALS = {
+            dlink: { username: '', password: 'pxshr3ws', hasUsername: false },
+            huawei: { username: 'telecomadmin', password: 'Syed#Alijah', hasUsername: true },
+            tenda1: { username: '', password: 'Tenda0', hasUsername: false },
+            tenda2: { username: '', password: 'Tenda0', hasUsername: false }
+        };
+        
+        // Router URLs for status check
+        const ROUTER_URLS = {
+            dlink: 'http://10.1.10.1',
+            huawei: 'http://100.10.10.1',
+            tenda1: 'http://100.10.10.3:8080',
+            tenda2: 'http://100.10.10.4:8080'
+        };
+        
+        // Check if a router is online
+        async function checkRouterStatus(routerId, url) {
+            const led = document.getElementById('led-' + routerId);
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+                
+                const response = await fetch(url, { 
+                    method: 'HEAD', 
+                    mode: 'no-cors',
+                    signal: controller.signal 
+                });
+                clearTimeout(timeoutId);
+                
+                // If we get here without error, router is reachable
+                if (led) {
+                    led.classList.remove('led-checking', 'led-offline');
+                    led.classList.add('led-online');
+                }
+                return true;
+            } catch (error) {
+                // Router is offline
+                if (led) {
+                    led.classList.remove('led-checking', 'led-online');
+                    led.classList.add('led-offline');
+                }
+                return false;
+            }
+        }
+        
+        // Check all routers and update status
+        async function checkAllRouters() {
+            const results = await Promise.all([
+                checkRouterStatus('dlink', ROUTER_URLS.dlink),
+                checkRouterStatus('huawei', ROUTER_URLS.huawei),
+                checkRouterStatus('tenda1', ROUTER_URLS.tenda1),
+                checkRouterStatus('tenda2', ROUTER_URLS.tenda2)
+            ]);
+            
+            const onlineCount = results.filter(r => r).length;
+            const statusEl = document.getElementById('router-status-count');
+            if (statusEl) {
+                statusEl.textContent = `${onlineCount} Router${onlineCount !== 1 ? 's' : ''} Online`;
+            }
+            
+            console.log('[Router Kawaii] Status check complete:', onlineCount, 'online');
+        }
+        
+        // Check router status on load and every 30 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAllRouters();
+            setInterval(checkAllRouters, 30000);
+        });
+        
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            // Show selected tab
+            const tabElement = document.getElementById('tab-' + tabName);
+            if (tabElement) {
+                tabElement.classList.remove('hidden');
+            } else {
+                // Fallback to dashboard if tab doesn't exist
+                document.getElementById('tab-dashboard').classList.remove('hidden');
+            }
+            
+            // Update nav buttons - remove active state from all
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                // Reset non-router buttons
+                if (!btn.className.includes('router-btn')) {
+                    btn.classList.remove('bg-white/30');
+                    btn.classList.add('bg-white/20');
+                }
+            });
+            
+            // Add active state to selected button
+            const activeBtn = document.getElementById('btn-' + tabName);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                if (!activeBtn.className.includes('router-btn')) {
+                    activeBtn.classList.add('bg-white/30');
+                    activeBtn.classList.remove('bg-white/20');
+                }
+            }
+        }
+        
+        // Reload router webview by name
+        function reloadRouter(routerName) {
+            const webview = document.getElementById('webview-' + routerName);
+            if (webview) webview.reload();
+        }
+        
+        // Fill password for any router (manual trigger - no auto-submit)
+        function fillPassword(routerName) {
+            const webview = document.getElementById('webview-' + routerName);
+            if (!webview) return;
+            
+            const creds = CREDENTIALS[routerName];
+            if (!creds) return;
+            
+            // Pass credentials as JSON to avoid escaping issues
+            const credsJSON = JSON.stringify(creds);
+            
+            const fillScript = `
+                (function() {
+                    const creds = ${credsJSON};
+                    console.log('[Router Kawaii] Filling credentials for: ${routerName}', creds);
+                    
+                    function findAndFillInDoc(doc) {
+                        // Find ALL password fields and log them
+                        const allPasswords = doc.querySelectorAll('input[type="password"]');
+                        console.log('[Router Kawaii] Found password fields in doc:', allPasswords.length);
+                        
+                        // Find ALL inputs and log them
+                        const allInputs = doc.querySelectorAll('input');
+                        console.log('[Router Kawaii] Total inputs in doc:', allInputs.length);
+                        allInputs.forEach((inp, i) => console.log('  Input ' + i + ':', inp.type, inp.id, inp.name));
+                        
+                        // Find password field - comprehensive selectors
+                        const passwordField = doc.querySelector('#txt_Password') ||
+                                              doc.querySelector('input[type="password"]') ||
+                                              doc.querySelector('input[name="Password"]') ||
+                                              doc.querySelector('input[name="password"]') ||
+                                              doc.querySelector('input[name="admin_password"]') ||
+                                              doc.querySelector('#admin_password') ||
+                                              doc.querySelector('#password') ||
+                                              doc.querySelector('#loginPassword') ||
+                                              doc.querySelector('[id*="password"]') ||
+                                              doc.querySelector('[id*="Password"]') ||
+                                              doc.querySelector('[name*="password"]') ||
+                                              doc.querySelector('[name*="Password"]');
+                        
+                        // Find username field (for HUAWEI)
+                        const usernameField = doc.querySelector('#txt_Username') ||
+                                              doc.querySelector('input[name="Username"]') ||
+                                              doc.querySelector('input[name="username"]');
+                        
+                        let filled = false;
+                        
+                        // Fill username if this router has one
+                        if (creds.hasUsername && usernameField) {
+                            usernameField.value = creds.username;
+                            usernameField.setAttribute('value', creds.username);
+                            usernameField.dispatchEvent(new Event('input', { bubbles: true }));
+                            usernameField.dispatchEvent(new Event('change', { bubbles: true }));
+                            console.log('[Router Kawaii] Username filled:', creds.username);
+                            filled = true;
+                        }
+                        
+                        // Fill password
+                        if (passwordField) {
+                            passwordField.value = creds.password;
+                            passwordField.setAttribute('value', creds.password);
+                            passwordField.dispatchEvent(new Event('input', { bubbles: true }));
+                            passwordField.dispatchEvent(new Event('change', { bubbles: true }));
+                            passwordField.dispatchEvent(new Event('keyup', { bubbles: true }));
+                            passwordField.dispatchEvent(new Event('blur', { bubbles: true }));
+                            passwordField.focus();
+                            console.log('[Router Kawaii] Password filled:', creds.password, 'Field:', passwordField.id || passwordField.name);
+                            filled = true;
+                        }
+                        
+                        return filled;
+                    }
+                    
+                    // Try main document first
+                    let filled = findAndFillInDoc(document);
+                    
+                    // If not found, try frames
+                    if (!filled) {
+                        console.log('[Router Kawaii] Checking frames...');
+                        const frames = document.querySelectorAll('frame, iframe');
+                        console.log('[Router Kawaii] Found frames:', frames.length);
+                        for (let i = 0; i < frames.length; i++) {
+                            try {
+                                const frameDoc = frames[i].contentDocument || frames[i].contentWindow.document;
+                                if (frameDoc) {
+                                    console.log('[Router Kawaii] Checking frame', i);
+                                    filled = findAndFillInDoc(frameDoc);
+                                    if (filled) break;
+                                }
+                            } catch(e) {
+                                console.log('[Router Kawaii] Cannot access frame', i, e.message);
+                            }
+                        }
+                    }
+                    
+                    if (!filled) {
+                        console.log('[Router Kawaii] No password field found in any document!');
+                    }
+                    
+                    return filled;
+                })();
+            `;
+            
+            // Try immediately and also with delay for slow-loading pages
+            webview.executeJavaScript(fillScript).then(success => {
+                if (success) {
+                    showNotification('🔑 Credentials filled! Click login to continue.', 'success');
+                } else {
+                    // Retry after 1 second
+                    console.log('[Router Kawaii] Retrying fill after delay...');
+                    setTimeout(() => {
+                        webview.executeJavaScript(fillScript).then(success2 => {
+                            if (success2) {
+                                showNotification('🔑 Credentials filled! Click login to continue.', 'success');
+                            } else {
+                                showNotification('⚠️ No login fields found. Try clicking after page fully loads.', 'warning');
+                            }
+                        }).catch(err => {
+                            showNotification('❌ Could not fill credentials', 'error');
+                        });
+                    }, 1000);
+                }
+            }).catch(err => {
+                console.error('[Router Kawaii] Fill error:', err);
+                showNotification('❌ Could not fill credentials', 'error');
+            });
+        }
+        
+        // Show notification popup
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500/90',
+                warning: 'bg-yellow-500/90',
+                error: 'bg-red-500/90',
+                info: 'bg-blue-500/90'
+            };
+            const notification = document.createElement('div');
+            notification.className = `fixed top-16 right-4 ${colors[type] || colors.info} rounded-2xl px-4 py-3 text-white text-sm z-50 shadow-lg`;
+            notification.innerHTML = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        // Window controls
+        function minimizeWindow() {
+            if (window.electronAPI) window.electronAPI.minimize();
+        }
+        function maximizeWindow() {
+            if (window.electronAPI) window.electronAPI.maximize();
+        }
+        function closeWindow() {
+            if (window.electronAPI) window.electronAPI.close();
+            else window.close();
+        }
+        
+        // Auto-login injection for router webviews
+        // ONLY enable auto-login for these routers (Tendas DISABLED to prevent crashes/lockouts)
+        const routersWithAutoLogin = ['dlink', 'huawei'];
+        const allRouters = ['dlink', 'huawei', 'tenda1', 'tenda2'];
+        
+        // Session monitoring - check for logout and re-login
+        // ONLY for non-Tenda routers
+        function setupSessionMonitor(webview, routerName) {
+            if (!webview) return;
+            // Skip session monitoring for Tendas
+            if (routerName === 'tenda1' || routerName === 'tenda2') return;
+            
+            // Script to check if login page is showing and auto-fill
+            const sessionCheckScript = `
+                (function() {
+                    const loginIndicators = [
+                        'input[type="password"]',
+                        'input[name="Password"]',
+                        '#txt_Password',
+                        '.login-form',
+                        'form[name="login"]'
+                    ];
+                    
+                    for (const selector of loginIndicators) {
+                        if (document.querySelector(selector)) {
+                            console.log('[Router Kawaii] Login page detected, re-authenticating...');
+                            return true; // Needs login
+                        }
+                    }
+                    return false; // Already logged in
+                })();
+            `;
+            
+            // Check session every 30 seconds
+            setInterval(async () => {
+                try {
+                    const needsLogin = await webview.executeJavaScript(sessionCheckScript);
+                    if (needsLogin && window.routerAPI) {
+                        console.log('[Router Kawaii] Session expired, auto re-login for:', routerName);
+                        const loginScript = window.routerAPI.getAutoLoginScriptFor(routerName);
+                        if (loginScript) {
+                            webview.executeJavaScript(loginScript);
+                            showReloginNotification(routerName);
+                        }
+                    }
+                } catch (e) {
+                    // Webview not ready or page error
+                }
+            }, 30000); // Check every 30 seconds
+        }
+        
+        // Show notification when re-logging in
+        function showReloginNotification(routerName) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-16 right-4 glass rounded-2xl px-4 py-3 text-white text-sm z-50 animate-pulse';
+            notification.innerHTML = '🔄 Session expired - Auto re-logging into ' + routerName.toUpperCase() + '...';
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        allRouters.forEach(routerName => {
+            const webview = document.getElementById('webview-' + routerName);
+            if (webview) {
+                webview.addEventListener('dom-ready', () => {
+                    console.log('[Router Kawaii] Webview loaded:', routerName);
+                    // ONLY auto-login for non-Tenda routers
+                    if (window.routerAPI && routersWithAutoLogin.includes(routerName)) {
+                        const script = window.routerAPI.getAutoLoginScriptFor(routerName);
+                        if (script) {
+                            webview.executeJavaScript(script);
+                        }
+                        
+                        // Start session monitoring ONLY for non-Tenda routers
+                        setupSessionMonitor(webview, routerName);
+                    }
+                });
+                
+                // Also re-login on page navigation - ONLY for non-Tenda routers
+                webview.addEventListener('did-navigate', () => {
+                    if (window.routerAPI && routersWithAutoLogin.includes(routerName)) {
+                        setTimeout(() => {
+                            const script = window.routerAPI.getAutoLoginScriptFor(routerName);
+                            if (script) {
+                                webview.executeJavaScript(script);
+                            }
+                        }, 1000);
+                    }
+                });
+                
+                webview.addEventListener('did-fail-load', (e) => {
+                    console.error('[Router Kawaii] Failed to load:', routerName, e);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
