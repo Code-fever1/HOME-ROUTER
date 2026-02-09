@@ -20,7 +20,7 @@ function createWindow() {
   });
 
   // ============================================
-  // PHASE 1: CRITICAL SECURITY BYPASS
+  // PHASE 1: CRITICAL SECURITY BYPASS 
   // Strip X-Frame-Options headers from ALL routers
   // ============================================
   session.defaultSession.webRequest.onHeadersReceived(
