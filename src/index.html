@@ -121,6 +121,10 @@
                 <svg class="w-5 h-5 text-orange-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
                 <span class="text-[9px] font-bold text-orange-800 mt-0.5">Tenda</span>
             </button>
+            <button onclick="showTab('camera')" id="btn-camera" class="nav-btn router-btn-cyan w-14 h-14 rounded-2xl hover:scale-110 flex flex-col items-center justify-center transition-all shadow-lg" title="Camera">
+                <svg class="w-5 h-5 text-cyan-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0011.586 3H8.414a1 1 0 00-.707.293L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+                <span class="text-[9px] font-bold text-cyan-800 mt-0.5">Camera</span>
+            </button>
             
             <div class="flex-1"></div>
             
@@ -171,6 +175,37 @@
                                 <p class="text-orange-700 text-xs">100.10.10.4:8080</p>
                             </div>
                         </div>
+                        <div onclick="showTab('camera')" class="glass rounded-2xl p-5 cursor-pointer hover:scale-105 transition-all router-btn-cyan relative">
+                            <div id="led-camera" class="led-indicator led-checking"></div>
+                            <div class="text-center">
+                                <span class="text-4xl">📷</span>
+                                <h3 class="text-cyan-800 font-bold mt-2">Camera</h3>
+                                <p class="text-cyan-700 text-xs">100.10.10.2</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Network Status Section -->
+                    <div class="glass rounded-2xl p-5 mb-6">
+                        <h3 class="text-white font-bold mb-4 flex items-center gap-2">
+                            <span class="text-2xl">🌐</span>
+                            Network Status
+                            <span id="network-status-badge" class="px-2 py-1 bg-green-500/30 text-green-300 text-xs rounded-full">Connected</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="text-center">
+                                <p class="text-white/60 text-sm mb-1">Total Bandwidth</p>
+                                <p id="total-bandwidth" class="text-white font-bold text-lg">0 Mbps</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-white/60 text-sm mb-1">Per Device</p>
+                                <p id="per-device-speed" class="text-white font-bold text-lg">30 Mbps</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-white/60 text-sm mb-1">Network Load</p>
+                                <p id="network-load" class="text-white font-bold text-lg">0%</p>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Status Cards -->
@@ -193,7 +228,7 @@
                                 </div>
                                 <div>
                                     <p class="text-white/60 text-sm">Download</p>
-                                    <p class="text-white font-bold">120 Mbps</p>
+                                    <p id="download-speed" class="text-white font-bold">0 Mbps</p>
                                 </div>
                             </div>
                         </div>
@@ -204,7 +239,7 @@
                                 </div>
                                 <div>
                                     <p class="text-white/60 text-sm">Upload</p>
-                                    <p class="text-white font-bold">120 Mbps</p>
+                                    <p id="upload-speed" class="text-white font-bold">0 Mbps</p>
                                 </div>
                             </div>
                         </div>
@@ -308,6 +343,30 @@
                 </div>
             </div>
 
+            <!-- Camera Router Tab -->
+            <div id="tab-camera" class="tab-content h-full hidden">
+                <div class="glass rounded-3xl h-full p-4 flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl router-btn-cyan flex items-center justify-center">
+                                <span class="text-xl">📷</span>
+                            </div>
+                            <div>
+                                <h2 class="text-white font-bold">Camera Router</h2>
+                                <p class="text-white/60 text-xs">100.10.10.2</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="fillPassword('camera')" class="px-4 py-2 bg-cyan-500/80 hover:bg-cyan-500 rounded-xl text-white text-sm transition flex items-center gap-1">🔑 Fill Password</button>
+                            <button onclick="reloadRouter('camera')" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition">🔄 Reload</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 rounded-2xl overflow-hidden bg-white">
+                        <webview id="webview-camera" src="http://100.10.10.2" class="w-full h-full"></webview>
+                    </div>
+                </div>
+            </div>
+
             <!-- Settings Tab -->
             <div id="tab-settings" class="tab-content h-full hidden">
                 <div class="glass rounded-3xl h-full p-6 overflow-y-auto">
@@ -389,11 +448,12 @@
         // ============================================
         
         // To change credentials, edit the values here:
-        const CREDENTIALS = {
+        const ROUTER_CREDENTIALS = {
             dlink: { username: '', password: 'pxshr3ws', hasUsername: false },
             huawei: { username: 'telecomadmin', password: 'Syed#Alijah', hasUsername: true },
             tenda1: { username: '', password: 'Tenda0', hasUsername: false },
-            tenda2: { username: '', password: 'Tenda0', hasUsername: false }
+            tenda2: { username: '', password: 'Tenda0', hasUsername: false },
+            camera: { username: '', password: 'admin', hasUsername: false }
         };
         
         // Router URLs for status check
@@ -401,15 +461,60 @@
             dlink: 'http://10.1.10.1',
             huawei: 'http://100.10.10.1',
             tenda1: 'http://100.10.10.3:8080',
-            tenda2: 'http://100.10.10.4:8080'
+            tenda2: 'http://100.10.10.4:8080',
+            camera: 'http://100.10.10.2'
         };
         
         // Check if a router is online
         async function checkRouterStatus(routerId, url) {
             const led = document.getElementById('led-' + routerId);
+            
+            // Special handling for camera router - use a different approach
+            if (routerId === 'camera') {
+                try {
+                    console.log(`[Router Kawaii] Checking camera status...`);
+                    
+                    // Create an image to test connectivity (works better with no-cors)
+                    const img = new Image();
+                    const timeout = setTimeout(() => {
+                        img.src = ''; // Cancel the request
+                        throw new Error('Camera timeout');
+                    }, 3000);
+                    
+                    // Try to load a common camera resource
+                    img.onload = () => {
+                        clearTimeout(timeout);
+                        if (led) {
+                            led.classList.remove('led-checking', 'led-offline');
+                            led.classList.add('led-online');
+                            console.log(`[Router Kawaii] Camera is ONLINE (image loaded)`);
+                        }
+                    };
+                    
+                    img.onerror = () => {
+                        clearTimeout(timeout);
+                        // Try fetch as fallback
+                        fetchCameraEndpoints(url, led);
+                    };
+                    
+                    // Try to load a small image from camera
+                    img.src = url + '/favicon.ico?' + Date.now();
+                    
+                    return true;
+                } catch (error) {
+                    console.log(`[Router Kawaii] Camera is OFFLINE:`, error.message);
+                    if (led) {
+                        led.classList.remove('led-checking', 'led-online');
+                        led.classList.add('led-offline');
+                    }
+                    return false;
+                }
+            }
+            
+            // Standard router check for non-camera devices
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
                 
                 const response = await fetch(url, { 
                     method: 'HEAD', 
@@ -422,10 +527,12 @@
                 if (led) {
                     led.classList.remove('led-checking', 'led-offline');
                     led.classList.add('led-online');
+                    console.log(`[Router Kawaii] ${routerId} is ONLINE`);
                 }
                 return true;
             } catch (error) {
                 // Router is offline
+                console.log(`[Router Kawaii] ${routerId} is OFFLINE:`, error.message);
                 if (led) {
                     led.classList.remove('led-checking', 'led-online');
                     led.classList.add('led-offline');
@@ -434,22 +541,265 @@
             }
         }
         
+        // Helper function for camera endpoint testing
+        async function fetchCameraEndpoints(url, led) {
+            try {
+                console.log(`[Router Kawaii] Trying camera endpoints...`);
+                const cameraEndpoints = [
+                    url,
+                    url + '/doc/',
+                    url + '/',
+                    url + '/index.html'
+                ];
+                
+                for (const endpoint of cameraEndpoints) {
+                    try {
+                        console.log(`[Router Kawaii] Checking camera endpoint: ${endpoint}`);
+                        await fetch(endpoint, { 
+                            method: 'GET', 
+                            mode: 'no-cors',
+                            signal: AbortSignal.timeout(2000)
+                        });
+                        
+                        // If we reach here, consider it successful
+                        if (led) {
+                            led.classList.remove('led-checking', 'led-offline');
+                            led.classList.add('led-online');
+                            console.log(`[Router Kawaii] Camera is ONLINE (endpoint: ${endpoint})`);
+                        }
+                        return true;
+                    } catch (e) {
+                        console.log(`[Router Kawaii] Camera endpoint failed: ${endpoint}`);
+                        continue;
+                    }
+                }
+                
+                // All endpoints failed
+                console.log(`[Router Kawaii] Camera is OFFLINE (all endpoints failed)`);
+                if (led) {
+                    led.classList.remove('led-checking', 'led-online');
+                    led.classList.add('led-offline');
+                }
+                return false;
+            } catch (error) {
+                console.log(`[Router Kawaii] Camera check failed:`, error.message);
+                if (led) {
+                    led.classList.remove('led-checking', 'led-online');
+                    led.classList.add('led-offline');
+                }
+                return false;
+            }
+        }
+        
+        // Network monitoring variables
+        let onlineRoutersCount = 0;
+        const BASE_SPEED_PER_ROUTER = 30; // 30 Mbps per router
+        
+        // Scan network for devices using D-Link router interface
+        async function scanNetworkDevices() {
+            try {
+                // Only scan if D-Link router is online (assuming it's the main router)
+                const dlinkLed = document.getElementById('led-dlink');
+                if (!dlinkLed || !dlinkLed.classList.contains('led-online')) {
+                    updateBandwidth();
+                    return;
+                }
+                
+                // Try to get device list from D-Link router web interface
+                const webview = document.getElementById('webview-dlink');
+                if (webview) {
+                    try {
+                        // Execute JavaScript in the D-Link webview to find connected devices
+                        const deviceCount = await webview.executeJavaScript(`
+                            (function() {
+                                // Look for device list in common D-Link interface locations
+                                const deviceSelectors = [
+                                    '.device-list tr',
+                                    '.connected-device tr',
+                                    '.dhcp-client tr',
+                                    'table.device-table tr',
+                                    '.client-list tr',
+                                    '[data-device]',
+                                    '.device-item'
+                                ];
+                                
+                                let maxDevices = 0;
+                                
+                                for (const selector of deviceSelectors) {
+                                    const elements = document.querySelectorAll(selector);
+                                    if (elements.length > 0) {
+                                        // Count actual devices (exclude header rows)
+                                        const deviceRows = Array.from(elements).filter(el => {
+                                            const text = el.textContent.toLowerCase();
+                                            return text.includes('192.168.') || 
+                                                   text.includes('10.0.') ||
+                                                   text.includes('mac') ||
+                                                   text.includes('device') ||
+                                                   (text.match(/\d+\.\d+\.\d+\.\d+/) && !text.includes('router'));
+                                        });
+                                        maxDevices = Math.max(maxDevices, deviceRows.length);
+                                    }
+                                }
+                                
+                                // If no devices found in tables, try to count from status text
+                                if (maxDevices === 0) {
+                                    const statusText = document.body.textContent;
+                                    const deviceMatches = statusText.match(/(\d+)\s*(device|client|computer|phone|tablet)/gi);
+                                    if (deviceMatches) {
+                                        const numbers = deviceMatches.map(match => parseInt(match.match(/\d+/)[0]));
+                                        maxDevices = Math.max(...numbers);
+                                    }
+                                }
+                                
+                                // Fallback: estimate based on common home network size
+                                if (maxDevices === 0) {
+                                    maxDevices = Math.floor(Math.random() * 8) + 3; // 3-10 devices typical
+                                }
+                                
+                                return maxDevices;
+                            })()
+                        `);
+                        
+                        if (deviceCount && deviceCount > 0) {
+                            updateBandwidth();
+                            return;
+                        }
+                    } catch (e) {
+                        console.log('[Router Kawaii] Could not access D-Link interface, using fallback');
+                    }
+                }
+                
+                // Fallback: quick ping scan of common home network IPs
+                await quickNetworkScan();
+                
+            } catch (error) {
+                console.error('[Router Kawaii] Network scan failed:', error);
+                updateBandwidth();
+            }
+        }
+        
+        // Quick network scan as fallback
+        async function quickNetworkScan() {
+            const commonIPs = [
+                '192.168.1.1', '192.168.1.2', '192.168.1.3', '192.168.1.4', '192.168.1.5',
+                '192.168.1.100', '192.168.1.101', '192.168.1.102', '192.168.1.103', '192.168.1.104',
+                '192.168.0.1', '192.168.0.2', '192.168.0.3', '192.168.0.4', '192.168.0.5',
+                '10.0.0.1', '10.0.0.2', '10.0.0.3', '10.0.0.4', '10.0.0.5'
+            ];
+            
+            let devicesFound = 0;
+            
+            // Try to ping common IPs with timeout
+            const promises = commonIPs.map(async (ip) => {
+                try {
+                    await fetch(`http://${ip}`, { 
+                        method: 'HEAD',
+                        mode: 'no-cors',
+                        signal: AbortSignal.timeout(500)
+                    });
+                    return 1;
+                } catch (e) {
+                    return 0;
+                }
+            });
+            
+            const results = await Promise.all(promises);
+            devicesFound = results.reduce((sum, result) => sum + result, 0);
+            
+            // Estimate total devices (usually more than what we can directly detect)
+            const estimatedDevices = Math.max(devicesFound, Math.floor(devicesFound * 1.5) + 2);
+            updateBandwidth(); // Just update bandwidth, we don't need device count anymore
+        }
+        
+        // Update bandwidth calculation based on ONLINE ROUTERS
+        function updateBandwidth() {
+            const statusBadge = document.getElementById('network-status-badge');
+            
+            // Update network status badge based on routers
+            if (statusBadge) {
+                if (onlineRoutersCount === 0) {
+                    statusBadge.textContent = 'No Routers';
+                    statusBadge.className = 'px-2 py-1 bg-red-500/30 text-red-300 text-xs rounded-full';
+                } else if (onlineRoutersCount <= 2) {
+                    statusBadge.textContent = 'Light Load';
+                    statusBadge.className = 'px-2 py-1 bg-green-500/30 text-green-300 text-xs rounded-full';
+                } else if (onlineRoutersCount <= 3) {
+                    statusBadge.textContent = 'Moderate Load';
+                    statusBadge.className = 'px-2 py-1 bg-yellow-500/30 text-yellow-300 text-xs rounded-full';
+                } else {
+                    statusBadge.textContent = 'High Load';
+                    statusBadge.className = 'px-2 py-1 bg-orange-500/30 text-orange-300 text-xs rounded-full';
+                }
+            }
+            
+            // Calculate bandwidth based on ONLINE ROUTERS (30 Mbps per router)
+            const totalBandwidth = onlineRoutersCount * BASE_SPEED_PER_ROUTER;
+            
+            // Calculate network load percentage based on routers
+            const maxRouterBandwidth = 5 * BASE_SPEED_PER_ROUTER; // 5 routers max
+            const networkLoad = onlineRoutersCount > 0 ? Math.min(100, Math.floor((onlineRoutersCount * BASE_SPEED_PER_ROUTER) / maxRouterBandwidth * 100)) : 0;
+            
+            // Update all displays
+            const downloadEl = document.getElementById('download-speed');
+            const uploadEl = document.getElementById('upload-speed');
+            const totalBandwidthEl = document.getElementById('total-bandwidth');
+            const perDeviceEl = document.getElementById('per-device-speed');
+            const networkLoadEl = document.getElementById('network-load');
+            
+            if (downloadEl) {
+                downloadEl.textContent = `${totalBandwidth} Mbps`;
+            }
+            if (uploadEl) {
+                uploadEl.textContent = `${totalBandwidth} Mbps`;
+            }
+            if (totalBandwidthEl) {
+                totalBandwidthEl.textContent = `${totalBandwidth} Mbps`;
+            }
+            if (perDeviceEl) {
+                perDeviceEl.textContent = `${BASE_SPEED_PER_ROUTER} Mbps`;
+            }
+            if (networkLoadEl) {
+                networkLoadEl.textContent = `${networkLoad}%`;
+                // Update color based on load
+                if (networkLoad <= 50) {
+                    networkLoadEl.className = 'text-white font-bold text-lg text-green-300';
+                } else if (networkLoad <= 80) {
+                    networkLoadEl.className = 'text-white font-bold text-lg text-yellow-300';
+                } else {
+                    networkLoadEl.className = 'text-white font-bold text-lg text-red-300';
+                }
+            }
+            
+            console.log(`[Router Kawaii] Network: ${onlineRoutersCount} routers online, ${totalBandwidth} Mbps total bandwidth`);
+        }
+        
         // Check all routers and update status
         async function checkAllRouters() {
             const results = await Promise.all([
                 checkRouterStatus('dlink', ROUTER_URLS.dlink),
                 checkRouterStatus('huawei', ROUTER_URLS.huawei),
                 checkRouterStatus('tenda1', ROUTER_URLS.tenda1),
-                checkRouterStatus('tenda2', ROUTER_URLS.tenda2)
+                checkRouterStatus('tenda2', ROUTER_URLS.tenda2),
+                checkRouterStatus('camera', ROUTER_URLS.camera)
             ]);
             
-            const onlineCount = results.filter(r => r).length;
+            onlineRoutersCount = results.filter(r => r).length;
             const statusEl = document.getElementById('router-status-count');
             if (statusEl) {
-                statusEl.textContent = `${onlineCount} Router${onlineCount !== 1 ? 's' : ''} Online`;
+                statusEl.textContent = `${onlineRoutersCount} Router${onlineRoutersCount !== 1 ? 's' : ''} Online`;
             }
             
-            console.log('[Router Kawaii] Status check complete:', onlineCount, 'online');
+            console.log('[Router Kawaii] Status check complete:', onlineRoutersCount, 'online');
+            
+            // Update bandwidth calculation based on online routers
+            updateBandwidth();
+            
+            // Scan for network devices if any router is online (for logging purposes only)
+            if (onlineRoutersCount > 0) {
+                await scanNetworkDevices();
+            } else {
+                updateBandwidth();
+            }
         }
         
         // Check router status on load and every 30 seconds
