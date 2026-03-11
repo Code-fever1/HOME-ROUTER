@@ -1,6 +1,4 @@
 import { Geist, Geist_Mono } from "next/font/google"
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -25,15 +23,10 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("dark antialiased", fontMono.variable, "font-sans", fontSans.variable)}
+      className={cn("antialiased", fontMono.variable, "font-sans", fontSans.variable)}
     >
-      <body className="bg-slate-950 text-slate-100">
-        <ThemeProvider defaultTheme="dark" enableSystem={false}>
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
-        </ThemeProvider>
-        <Toaster />
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   )
