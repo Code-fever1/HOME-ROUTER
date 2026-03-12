@@ -4,25 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://100.10.10.1 http://10.1.10.1 http://100.10.10.3:8080 http://100.10.10.4:8080; connect-src 'self' http://100.10.10.1 http://10.1.10.1 http://100.10.10.3:8080 http://100.10.10.4:8080;">
-    <title>Router Kawaii 📶</title>
+    <title>Router Dashboard</title>
     <link rel="stylesheet" href="output.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
         /* Frameless window drag */
         .title-bar { -webkit-app-region: drag; }
         .title-bar button { -webkit-app-region: no-drag; }
         
-        /* Glassmorphism */
-        .glass {
-            background: rgba(255, 255, 255, 0.15);
+        /* Sidebar active state */
+        .sidebar-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border-right: 3px solid #3b82f6;
+        }
+        
+        /* Pastel card colors */
+        .card-pink { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); }
+        .card-blue { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+        .card-green { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); }
+        .card-orange { background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); }
+        .card-cyan { background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%); }
+        .card-purple { background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); }
+        .card-yellow { background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%); }
+        
+        /* Status indicators */
+        .status-online { background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.4); }
+        .status-offline { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+        .status-checking { background: #9ca3af; animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Gauge chart */
+        .gauge-container {
+            position: relative;
+            width: 140px;
+            height: 80px;
+        }
+        
+        .gauge-bg {
+            fill: none;
+            stroke: #e2e8f0;
+            stroke-width: 12;
+        }
+        
+        .gauge-fill {
+            fill: none;
+            stroke: #3b82f6;
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.5s ease;
+        }
+        
+        /* Glass effect for sidebar */
+        .glass-sidebar {
+            background: rgba(15, 23, 42, 0.98);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Smooth transitions */
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        /* Table styles */
+        .data-table th {
+            font-weight: 500;
+            color: #64748b;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .data-table td {
+            color: #334155;
         }
         
         /* Webview styling */
@@ -30,412 +104,538 @@
             width: 100%;
             height: 100%;
             border: none;
-            border-radius: 20px;
-        }
-
-        /* Router button colors */
-        .router-btn-pink { background: linear-gradient(135deg, #ff9a9e, #fecfef) !important; }
-        .router-btn-blue { background: linear-gradient(135deg, #a1c4fd, #c2e9fb) !important; }
-        .router-btn-green { background: linear-gradient(135deg, #84fab0, #8fd3f4) !important; }
-        .router-btn-orange { background: linear-gradient(135deg, #ffecd2, #fcb69f) !important; }
-        .router-btn-purple { background: linear-gradient(135deg, #c471f5, #fa71cd) !important; }
-        .router-btn-cyan { background: linear-gradient(135deg, #89f7fe, #66a6ff) !important; }
-        
-        /* Grey background theme */
-        .bg-grey-theme {
-            background: linear-gradient(135deg, #2d3436 0%, #485460 50%, #1e272e 100%) !important;
-        }
-        
-        /* LED status indicators */
-        .led-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            box-shadow: 0 0 6px currentColor;
-        }
-        .led-checking {
-            background-color: #9ca3af;
-            animation: pulse 1.5s infinite;
-        }
-        .led-online {
-            background-color: #22c55e;
-            box-shadow: 0 0 8px #22c55e;
-        }
-        .led-offline {
-            background-color: #ef4444;
-            box-shadow: 0 0 8px #ef4444;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            border-radius: 12px;
         }
     </style>
 </head>
-<body class="bg-grey-theme min-h-screen overflow-hidden">
+<body class="bg-slate-50 overflow-hidden">
     <!-- Custom Title Bar -->
-    <div class="title-bar h-10 flex items-center justify-between px-4 bg-black/20">
+    <div class="title-bar h-9 flex items-center justify-between px-4 bg-slate-900 border-b border-slate-800">
         <div class="flex items-center gap-2">
-            <span class="text-xl">🏠</span>
-            <span class="text-white font-semibold text-sm">Syed Alijah Home</span>
+            <div class="w-6 h-6 rounded-lg bg-blue-500 flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
+                </svg>
+            </div>
+            <span class="text-slate-200 font-medium text-sm">Home Network</span>
         </div>
         <div class="flex gap-1">
-            <button onclick="minimizeWindow()" class="w-8 h-8 rounded-full bg-yellow-400 hover:bg-yellow-300 flex items-center justify-center transition">
-                <span class="text-yellow-800 text-xs">─</span>
+            <button onclick="minimizeWindow()" class="w-7 h-7 rounded-md hover:bg-slate-700 flex items-center justify-center transition">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
             </button>
-            <button onclick="maximizeWindow()" class="w-8 h-8 rounded-full bg-green-400 hover:bg-green-300 flex items-center justify-center transition">
-                <span class="text-green-800 text-xs">□</span>
+            <button onclick="maximizeWindow()" class="w-7 h-7 rounded-md hover:bg-slate-700 flex items-center justify-center transition">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
             </button>
-            <button onclick="closeWindow()" class="w-8 h-8 rounded-full bg-red-400 hover:bg-red-300 flex items-center justify-center transition">
-                <span class="text-red-800 text-xs">✕</span>
+            <button onclick="closeWindow()" class="w-7 h-7 rounded-md hover:bg-red-500/20 flex items-center justify-center transition group">
+                <svg class="w-4 h-4 text-slate-400 group-hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="flex h-[calc(100vh-40px)]">
+    <!-- Main Layout -->
+    <div class="flex h-[calc(100vh-36px)]">
         <!-- Sidebar -->
-        <nav class="w-20 glass m-3 mr-0 rounded-3xl flex flex-col items-center py-4 gap-3">
-            <button onclick="showTab('dashboard')" id="btn-dashboard" class="nav-btn active w-14 h-14 rounded-2xl bg-white/30 hover:bg-white/50 flex items-center justify-center transition-all hover:scale-110" title="Dashboard">
-                <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
-            </button>
-            
-            <div class="w-10 h-px bg-white/30 my-1"></div>
-            
-            <!-- Router Buttons -->
-            <button onclick="showTab('dlink')" id="btn-dlink" class="nav-btn router-btn-pink w-14 h-14 rounded-2xl hover:scale-110 flex flex-col items-center justify-center transition-all shadow-lg" title="D-Link">
-                <svg class="w-5 h-5 text-pink-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
-                <span class="text-[9px] font-bold text-pink-800 mt-0.5">D-Link</span>
-            </button>
-            <button onclick="showTab('huawei')" id="btn-huawei" class="nav-btn router-btn-blue w-14 h-14 rounded-2xl hover:scale-110 flex flex-col items-center justify-center transition-all shadow-lg" title="HUAWEI">
-                <svg class="w-5 h-5 text-blue-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
-                <span class="text-[9px] font-bold text-blue-800 mt-0.5">HUAWEI</span>
-            </button>
-            <button onclick="showTab('tenda1')" id="btn-tenda1" class="nav-btn router-btn-green w-14 h-14 rounded-2xl hover:scale-110 flex flex-col items-center justify-center transition-all shadow-lg" title="Tenda">
-                <svg class="w-5 h-5 text-teal-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
-                <span class="text-[9px] font-bold text-teal-800 mt-0.5">Tenda</span>
-            </button>
-            <button onclick="showTab('tenda2')" id="btn-tenda2" class="nav-btn router-btn-orange w-14 h-14 rounded-2xl hover:scale-110 flex flex-col items-center justify-center transition-all shadow-lg" title="Tenda">
-                <svg class="w-5 h-5 text-orange-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
-                <span class="text-[9px] font-bold text-orange-800 mt-0.5">Tenda</span>
-            </button>
-            <button onclick="showTab('camera')" id="btn-camera" class="nav-btn router-btn-cyan w-14 h-14 rounded-2xl hover:scale-110 flex flex-col items-center justify-center transition-all shadow-lg" title="Camera">
-                <svg class="w-5 h-5 text-cyan-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0011.586 3H8.414a1 1 0 00-.707.293L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
-                <span class="text-[9px] font-bold text-cyan-800 mt-0.5">Camera</span>
-            </button>
-            
-            <div class="flex-1"></div>
-            
-            <button onclick="showTab('settings')" id="btn-settings" class="nav-btn w-14 h-14 rounded-2xl bg-white/20 hover:bg-white/40 flex items-center justify-center transition-all hover:scale-110" title="Settings">
-                <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
-            </button>
-        </nav>
+        <aside class="w-64 glass-sidebar flex flex-col">
+            <!-- Logo Area -->
+            <div class="p-6 border-b border-slate-800/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-white font-semibold text-lg">Syed Alijah</h1>
+                        <p class="text-slate-400 text-xs">Home Network</p>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Content Area -->
-        <main class="flex-1 p-3 overflow-hidden">
-            <!-- Dashboard Tab -->
-            <div id="tab-dashboard" class="tab-content h-full">
-                <div class="glass rounded-3xl h-full p-6 overflow-y-auto">
-                    <h1 class="text-3xl font-bold text-white mb-2">Welcome Back Syed! 💕</h1>
-                    <p class="text-white/70 mb-6">Multi-Router Control Center</p>
-                    
-                    <!-- Router Cards -->
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <div onclick="showTab('dlink')" class="glass rounded-2xl p-5 cursor-pointer hover:scale-105 transition-all router-btn-pink relative">
-                            <div id="led-dlink" class="led-indicator led-checking"></div>
-                            <div class="text-center">
-                                <span class="text-4xl">📡</span>
-                                <h3 class="text-pink-800 font-bold mt-2">D-Link</h3>
-                                <p class="text-pink-700 text-xs">10.1.10.1</p>
-                            </div>
-                        </div>
-                        <div onclick="showTab('huawei')" class="glass rounded-2xl p-5 cursor-pointer hover:scale-105 transition-all router-btn-blue relative">
-                            <div id="led-huawei" class="led-indicator led-checking"></div>
-                            <div class="text-center">
-                                <span class="text-4xl">📶</span>
-                                <h3 class="text-blue-800 font-bold mt-2">HUAWEI</h3>
-                                <p class="text-blue-700 text-xs">100.10.10.1</p>
-                            </div>
-                        </div>
-                        <div onclick="showTab('tenda1')" class="glass rounded-2xl p-5 cursor-pointer hover:scale-105 transition-all router-btn-green relative">
-                            <div id="led-tenda1" class="led-indicator led-checking"></div>
-                            <div class="text-center">
-                                <span class="text-4xl">📶</span>
-                                <h3 class="text-teal-800 font-bold mt-2">Tenda</h3>
-                                <p class="text-teal-700 text-xs">100.10.10.3:8080</p>
-                            </div>
-                        </div>
-                        <div onclick="showTab('tenda2')" class="glass rounded-2xl p-5 cursor-pointer hover:scale-105 transition-all router-btn-orange relative">
-                            <div id="led-tenda2" class="led-indicator led-checking"></div>
-                            <div class="text-center">
-                                <span class="text-4xl">📶</span>
-                                <h3 class="text-orange-800 font-bold mt-2">Tenda</h3>
-                                <p class="text-orange-700 text-xs">100.10.10.4:8080</p>
-                            </div>
-                        </div>
-                        <div onclick="showTab('camera')" class="glass rounded-2xl p-5 cursor-pointer hover:scale-105 transition-all router-btn-cyan relative">
-                            <div id="led-camera" class="led-indicator led-checking"></div>
-                            <div class="text-center">
-                                <span class="text-4xl">📷</span>
-                                <h3 class="text-cyan-800 font-bold mt-2">Camera</h3>
-                                <p class="text-cyan-700 text-xs">100.10.10.2</p>
-                            </div>
+            <!-- Navigation -->
+            <nav class="flex-1 px-4 py-6 space-y-1">
+                <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-4 px-3">Menu</div>
+                
+                <button onclick="showTab('dashboard')" id="btn-dashboard" class="sidebar-item active w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    <span class="font-medium">Dashboard</span>
+                </button>
+                
+                <button onclick="showTab('routers')" id="btn-routers" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+                    <span class="font-medium">My Routers</span>
+                </button>
+                
+                <button onclick="showTab('devices')" id="btn-devices" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    <span class="font-medium">Devices</span>
+                </button>
+                
+                <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mt-8 mb-4 px-3">Routers</div>
+                
+                <button onclick="showTab('dlink')" id="btn-dlink" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <div class="w-2 h-2 rounded-full bg-pink-400"></div>
+                    <span class="font-medium">D-Link</span>
+                    <span id="status-dlink" class="ml-auto w-2 h-2 rounded-full bg-slate-600 status-checking"></span>
+                </button>
+                
+                <button onclick="showTab('huawei')" id="btn-huawei" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                    <span class="font-medium">HUAWEI</span>
+                    <span id="status-huawei" class="ml-auto w-2 h-2 rounded-full bg-slate-600 status-checking"></span>
+                </button>
+                
+                <button onclick="showTab('tenda1')" id="btn-tenda1" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                    <span class="font-medium">Tenda 1</span>
+                    <span id="status-tenda1" class="ml-auto w-2 h-2 rounded-full bg-slate-600 status-checking"></span>
+                </button>
+                
+                <button onclick="showTab('tenda2')" id="btn-tenda2" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <div class="w-2 h-2 rounded-full bg-orange-400"></div>
+                    <span class="font-medium">Tenda 2</span>
+                    <span id="status-tenda2" class="ml-auto w-2 h-2 rounded-full bg-slate-600 status-checking"></span>
+                </button>
+                
+                <button onclick="showTab('camera')" id="btn-camera" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <div class="w-2 h-2 rounded-full bg-cyan-400"></div>
+                    <span class="font-medium">Camera</span>
+                    <span id="status-camera" class="ml-auto w-2 h-2 rounded-full bg-slate-600 status-checking"></span>
+                </button>
+            </nav>
+
+            <!-- Storage Info -->
+            <div class="p-4 border-t border-slate-800/50">
+                <div class="bg-slate-800/50 rounded-2xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-slate-300 text-sm font-medium">Storage</span>
+                        <span class="text-blue-400 text-xs font-medium">75%</span>
+                    </div>
+                    <div class="gauge-container mx-auto">
+                        <svg viewBox="0 0 140 80" class="w-full h-full">
+                            <path d="M 10 70 A 60 60 0 0 1 130 70" class="gauge-bg"/>
+                            <path d="M 10 70 A 60 60 0 0 1 100 20" class="gauge-fill" stroke-dasharray="100 200" id="gauge-path"/>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-end pb-1">
+                            <span class="text-2xl font-bold text-white">63</span>
+                            <span class="text-xs text-slate-400">GB used</span>
                         </div>
                     </div>
-                    
-                    <!-- Network Status Section -->
-                    <div class="glass rounded-2xl p-5 mb-6">
-                        <h3 class="text-white font-bold mb-4 flex items-center gap-2">
-                            <span class="text-2xl">🌐</span>
-                            Network Status
-                            <span id="network-status-badge" class="px-2 py-1 bg-green-500/30 text-green-300 text-xs rounded-full">Connected</span>
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="text-center">
-                                <p class="text-white/60 text-sm mb-1">Total Bandwidth</p>
-                                <p id="total-bandwidth" class="text-white font-bold text-lg">0 Mbps</p>
+                    <div class="mt-3 space-y-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                <span class="text-slate-400">Documents</span>
                             </div>
-                            <div class="text-center">
-                                <p class="text-white/60 text-sm mb-1">Per Device</p>
-                                <p id="per-device-speed" class="text-white font-bold text-lg">30 Mbps</p>
+                            <span class="text-slate-300">8 GB</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                                <span class="text-slate-400">Images</span>
                             </div>
-                            <div class="text-center">
-                                <p class="text-white/60 text-sm mb-1">Network Load</p>
-                                <p id="network-load" class="text-white font-bold text-lg">0%</p>
+                            <span class="text-slate-300">2 GB</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+                                <span class="text-slate-400">Media</span>
                             </div>
+                            <span class="text-slate-300">11 GB</span>
                         </div>
                     </div>
-                    
-                    <!-- Status Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="glass rounded-2xl p-5">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl bg-green-400/30 flex items-center justify-center">
-                                    <span class="text-2xl">✅</span>
+                </div>
+            </div>
+
+            <!-- Settings at bottom -->
+            <div class="p-4 border-t border-slate-800/50">
+                <button onclick="showTab('settings')" id="btn-settings" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31 2.37 2.37a1.724 1.724 0 002.572 1.065c.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 001.066-2.573c1.543-.94 3.31-.826 2.37-2.37a1.724 1.724 0 001.065-2.572c1.756-.426 1.756-2.924 0-3.35a1.724 1.724 0 00-1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="font-medium">Settings</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-hidden flex flex-col">
+            <!-- Top Header -->
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
+                <!-- Search -->
+                <div class="flex-1 max-w-md">
+                    <div class="relative">
+                        <svg class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" placeholder="Search routers, devices..." class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                    </div>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-4">
+                    <button class="relative p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                    <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-slate-700">Syed Alijah</p>
+                            <p class="text-xs text-slate-500">Administrator</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                            SA
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <!-- Dashboard Tab -->
+                <div id="tab-dashboard" class="tab-content">
+                    <!-- Welcome -->
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold text-slate-800">Welcome back, Syed!</h2>
+                        <p class="text-slate-500 mt-1">Here's what's happening with your network today.</p>
+                    </div>
+
+                    <!-- Router Cards Grid -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-slate-800">My Routers</h3>
+                            <button onclick="showTab('routers')" class="text-blue-500 text-sm font-medium hover:underline">View All</button>
+                        </div>
+                        <div class="grid grid-cols-4 gap-4">
+                            <div onclick="showTab('dlink')" class="card-pink rounded-2xl p-5 hover-lift cursor-pointer relative">
+                                <div id="card-led-dlink" class="absolute top-4 right-4 w-2 h-2 rounded-full bg-slate-400 status-checking"></div>
+                                <div class="w-12 h-12 rounded-xl bg-white/60 flex items-center justify-center mb-4">
+                                    <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
                                 </div>
+                                <h4 class="font-semibold text-slate-800 mb-1">D-Link</h4>
+                                <p class="text-sm text-slate-600 mb-3">10.1.10.1</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-medium text-pink-700 bg-white/60 px-2 py-1 rounded-lg">1250 files</span>
+                                </div>
+                            </div>
+                            
+                            <div onclick="showTab('huawei')" class="card-blue rounded-2xl p-5 hover-lift cursor-pointer relative">
+                                <div id="card-led-huawei" class="absolute top-4 right-4 w-2 h-2 rounded-full bg-slate-400 status-checking"></div>
+                                <div class="w-12 h-12 rounded-xl bg-white/60 flex items-center justify-center mb-4">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+                                </div>
+                                <h4 class="font-semibold text-slate-800 mb-1">HUAWEI</h4>
+                                <p class="text-sm text-slate-600 mb-3">100.10.10.1</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-medium text-blue-700 bg-white/60 px-2 py-1 rounded-lg">328 files</span>
+                                </div>
+                            </div>
+                            
+                            <div onclick="showTab('tenda1')" class="card-green rounded-2xl p-5 hover-lift cursor-pointer relative">
+                                <div id="card-led-tenda1" class="absolute top-4 right-4 w-2 h-2 rounded-full bg-slate-400 status-checking"></div>
+                                <div class="w-12 h-12 rounded-xl bg-white/60 flex items-center justify-center mb-4">
+                                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+                                </div>
+                                <h4 class="font-semibold text-slate-800 mb-1">Tenda 1</h4>
+                                <p class="text-sm text-slate-600 mb-3">100.10.10.3</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-medium text-emerald-700 bg-white/60 px-2 py-1 rounded-lg">856 files</span>
+                                </div>
+                            </div>
+                            
+                            <div onclick="showTab('tenda2')" class="card-orange rounded-2xl p-5 hover-lift cursor-pointer relative">
+                                <div id="card-led-tenda2" class="absolute top-4 right-4 w-2 h-2 rounded-full bg-slate-400 status-checking"></div>
+                                <div class="w-12 h-12 rounded-xl bg-white/60 flex items-center justify-center mb-4">
+                                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+                                </div>
+                                <h4 class="font-semibold text-slate-800 mb-1">Tenda 2</h4>
+                                <p class="text-sm text-slate-600 mb-3">100.10.10.4</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-medium text-orange-700 bg-white/60 px-2 py-1 rounded-lg">243 files</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Network Stats -->
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200">
+                            <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-white/60 text-sm">Status</p>
-                                    <p id="router-status-count" class="text-white font-bold">Checking...</p>
+                                    <p class="text-slate-500 text-sm mb-1">Network Status</p>
+                                    <p id="network-status-text" class="text-lg font-semibold text-slate-800">Checking...</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                 </div>
                             </div>
                         </div>
-                        <div class="glass rounded-2xl p-5">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl bg-cyan-400/30 flex items-center justify-center">
-                                    <span class="text-2xl">⬇️</span>
-                                </div>
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200">
+                            <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-white/60 text-sm">Download</p>
-                                    <p id="download-speed" class="text-white font-bold">0 Mbps</p>
+                                    <p class="text-slate-500 text-sm mb-1">Download Speed</p>
+                                    <p id="download-speed-display" class="text-lg font-semibold text-slate-800">0 Mbps</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
                                 </div>
                             </div>
                         </div>
-                        <div class="glass rounded-2xl p-5">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl bg-purple-400/30 flex items-center justify-center">
-                                    <span class="text-2xl">⬆️</span>
-                                </div>
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200">
+                            <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-white/60 text-sm">Upload</p>
-                                    <p id="upload-speed" class="text-white font-bold">0 Mbps</p>
+                                    <p class="text-slate-500 text-sm mb-1">Upload Speed</p>
+                                    <p id="upload-speed-display" class="text-lg font-semibold text-slate-800">0 Mbps</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Access & Recent -->
+                    <div class="grid grid-cols-2 gap-6">
+                        <!-- Quick Access -->
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200">
+                            <h3 class="font-semibold text-slate-800 mb-4">Quick Access</h3>
+                            <div class="space-y-3">
+                                <div onclick="showTab('camera')" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition">
+                                    <div class="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-slate-700">Security Camera</p>
+                                        <p class="text-xs text-slate-500">Live feed available</p>
+                                    </div>
+                                    <div id="quick-status-camera" class="w-2 h-2 rounded-full bg-slate-400"></div>
+                                </div>
+                                <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition">
+                                    <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-slate-700">Network Analytics</p>
+                                        <p class="text-xs text-slate-500">View usage statistics</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200">
+                            <h3 class="font-semibold text-slate-800 mb-4">Recent Activity</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-slate-700">D-Link connected</p>
+                                        <p class="text-xs text-slate-500">2 minutes ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-slate-700">Speed test completed</p>
+                                        <p class="text-xs text-slate-500">1 hour ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-slate-700">Tenda 1 restarted</p>
+                                        <p class="text-xs text-slate-500">3 hours ago</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- D-Link Router Tab -->
-            <div id="tab-dlink" class="tab-content h-full hidden">
-                <div class="glass rounded-3xl h-full p-4 flex flex-col">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl router-btn-pink flex items-center justify-center">
-                                <span class="text-xl">📡</span>
-                            </div>
-                            <div>
-                                <h2 class="text-white font-bold">D-Link Router</h2>
-                                <p class="text-white/60 text-xs">10.1.10.1</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="fillPassword('dlink')" class="px-4 py-2 bg-pink-500/80 hover:bg-pink-500 rounded-xl text-white text-sm transition flex items-center gap-1">🔑 Fill Password</button>
-                            <button onclick="reloadRouter('dlink')" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition">🔄 Reload</button>
-                        </div>
-                    </div>
-                    <div class="flex-1 rounded-2xl overflow-hidden bg-white">
-                        <webview id="webview-dlink" src="http://10.1.10.1" class="w-full h-full"></webview>
-                    </div>
+                <!-- Other tabs -->
+                <div id="tab-routers" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-6">All Routers</h2>
                 </div>
-            </div>
 
-            <!-- HUAWEI Router Tab -->
-            <div id="tab-huawei" class="tab-content h-full hidden">
-                <div class="glass rounded-3xl h-full p-4 flex flex-col">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl router-btn-blue flex items-center justify-center">
-                                <span class="text-xl">📶</span>
-                            </div>
-                            <div>
-                                <h2 class="text-white font-bold">HUAWEI Router</h2>
-                                <p class="text-white/60 text-xs">100.10.10.1</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="fillPassword('huawei')" class="px-4 py-2 bg-blue-500/80 hover:bg-blue-500 rounded-xl text-white text-sm transition flex items-center gap-1">🔑 Fill Password</button>
-                            <button onclick="reloadRouter('huawei')" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition">🔄 Reload</button>
-                        </div>
-                    </div>
-                    <div class="flex-1 rounded-2xl overflow-hidden bg-white">
-                        <webview id="webview-huawei" src="http://100.10.10.1" class="w-full h-full"></webview>
-                    </div>
+                <div id="tab-devices" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-6">Connected Devices</h2>
                 </div>
-            </div>
 
-            <!-- Tenda 1 Router Tab -->
-            <div id="tab-tenda1" class="tab-content h-full hidden">
-                <div class="glass rounded-3xl h-full p-4 flex flex-col">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl router-btn-green flex items-center justify-center">
-                                <span class="text-xl">📶</span>
-                            </div>
-                            <div>
-                                <h2 class="text-white font-bold">Tenda Router</h2>
-                                <p class="text-white/60 text-xs">100.10.10.3:8080</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="fillPassword('tenda1')" class="px-4 py-2 bg-green-500/80 hover:bg-green-500 rounded-xl text-white text-sm transition flex items-center gap-1">🔑 Fill Password</button>
-                            <button onclick="reloadRouter('tenda1')" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition">🔄 Reload</button>
-                        </div>
-                    </div>
-                    <div class="flex-1 rounded-2xl overflow-hidden bg-white">
-                        <webview id="webview-tenda1" src="http://100.10.10.3:8080" class="w-full h-full"></webview>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tenda 2 Router Tab -->
-            <div id="tab-tenda2" class="tab-content h-full hidden">
-                <div class="glass rounded-3xl h-full p-4 flex flex-col">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl router-btn-orange flex items-center justify-center">
-                                <span class="text-xl">📶</span>
-                            </div>
-                            <div>
-                                <h2 class="text-white font-bold">Tenda Router</h2>
-                                <p class="text-white/60 text-xs">100.10.10.4:8080</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="fillPassword('tenda2')" class="px-4 py-2 bg-orange-500/80 hover:bg-orange-500 rounded-xl text-white text-sm transition flex items-center gap-1">🔑 Fill Password</button>
-                            <button onclick="reloadRouter('tenda2')" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition">🔄 Reload</button>
-                        </div>
-                    </div>
-                    <div class="flex-1 rounded-2xl overflow-hidden bg-white">
-                        <webview id="webview-tenda2" src="http://100.10.10.4:8080" class="w-full h-full"></webview>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Camera Router Tab -->
-            <div id="tab-camera" class="tab-content h-full hidden">
-                <div class="glass rounded-3xl h-full p-4 flex flex-col">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl router-btn-cyan flex items-center justify-center">
-                                <span class="text-xl">📷</span>
-                            </div>
-                            <div>
-                                <h2 class="text-white font-bold">Camera Router</h2>
-                                <p class="text-white/60 text-xs">100.10.10.2</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="fillPassword('camera')" class="px-4 py-2 bg-cyan-500/80 hover:bg-cyan-500 rounded-xl text-white text-sm transition flex items-center gap-1">🔑 Fill Password</button>
-                            <button onclick="reloadRouter('camera')" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition">🔄 Reload</button>
-                        </div>
-                    </div>
-                    <div class="flex-1 rounded-2xl overflow-hidden bg-white">
-                        <webview id="webview-camera" src="http://100.10.10.2" class="w-full h-full"></webview>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Tab -->
-            <div id="tab-settings" class="tab-content h-full hidden">
-                <div class="glass rounded-3xl h-full p-6 overflow-y-auto">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-2xl font-bold text-white">Router Settings ⚙️</h2>
-                        <button id="toggle-passwords" class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm transition flex items-center gap-2">
-                            <span id="toggle-icon">👁️</span> <span id="toggle-text">Show Passwords</span>
-                        </button>
-                    </div>
-                    
-                    <!-- Router Info (Read-only) -->
-                    <div class="space-y-4">
-                        <div class="glass rounded-2xl p-4">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-10 h-10 rounded-xl router-btn-pink flex items-center justify-center">
+                <!-- Router Detail Tabs -->
+                <div id="tab-dlink-detail" class="tab-content hidden">
+                    <div class="bg-white rounded-2xl border border-slate-200 h-[calc(100vh-180px)] flex flex-col">
+                        <div class="flex items-center justify-between p-4 border-b border-slate-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl card-pink flex items-center justify-center">
                                     <span class="text-xl">📡</span>
                                 </div>
-                                <h3 class="text-white font-bold">D-Link Router</h3>
+                                <div>
+                                    <h2 class="font-bold text-slate-800">D-Link Router</h2>
+                                    <p class="text-sm text-slate-500">10.1.10.1</p>
+                                </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-3 text-sm">
-                                <div><span class="text-white/60">IP:</span> <span class="text-white">10.1.10.1</span></div>
-                                <div><span class="text-white/60">Password:</span> <span class="text-white password-field">••••••••</span><span class="text-white password-value hidden">pxshr3ws</span></div>
+                            <div class="flex gap-2">
+                                <button onclick="fillPassword('dlink')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-sm font-medium transition flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                    Auto-login
+                                </button>
+                                <button onclick="reloadRouter('dlink')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-sm font-medium transition">Reload</button>
                             </div>
                         </div>
-                        
-                        <div class="glass rounded-2xl p-4">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-10 h-10 rounded-xl router-btn-blue flex items-center justify-center">
-                                    <span class="text-xl">📶</span>
-                                </div>
-                                <h3 class="text-white font-bold">HUAWEI Router</h3>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3 text-sm">
-                                <div><span class="text-white/60">IP:</span> <span class="text-white">100.10.10.1</span></div>
-                                <div><span class="text-white/60">Username:</span> <span class="text-white">telecomadmin</span></div>
-                                <div><span class="text-white/60">Password:</span> <span class="text-white password-field">••••••••</span><span class="text-white password-value hidden">Syed#Alijah</span></div>
-                            </div>
-                        </div>
-                        
-                        <div class="glass rounded-2xl p-4">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-10 h-10 rounded-xl router-btn-green flex items-center justify-center">
-                                    <span class="text-xl">📶</span>
-                                </div>
-                                <h3 class="text-white font-bold">Tenda Router</h3>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3 text-sm">
-                                <div><span class="text-white/60">IP:</span> <span class="text-white">100.10.10.3:8080</span></div>
-                                <div><span class="text-white/60">Password:</span> <span class="text-white password-field">••••••••</span><span class="text-white password-value hidden">Tenda0</span></div>
-                            </div>
-                        </div>
-                        
-                        <div class="glass rounded-2xl p-4">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-10 h-10 rounded-xl router-btn-orange flex items-center justify-center">
-                                    <span class="text-xl">📶</span>
-                                </div>
-                                <h3 class="text-white font-bold">Tenda Router</h3>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3 text-sm">
-                                <div><span class="text-white/60">IP:</span> <span class="text-white">100.10.10.4:8080</span></div>
-                                <div><span class="text-white/60">Password:</span> <span class="text-white password-field">••••••••</span><span class="text-white password-value hidden">Tenda0</span></div>
-                            </div>
+                        <div class="flex-1 p-4">
+                            <webview id="webview-dlink" src="http://10.1.10.1" class="w-full h-full border border-slate-200 rounded-xl"></webview>
                         </div>
                     </div>
-                    
-                    <div class="mt-6 glass rounded-2xl p-4">
-                        <h3 class="text-white font-semibold mb-2">💡 Note</h3>
-                        <p class="text-white/60 text-sm">To change router credentials, edit the source code in index.html</p>
+                </div>
+
+                <div id="tab-huawei-detail" class="tab-content hidden">
+                    <div class="bg-white rounded-2xl border border-slate-200 h-[calc(100vh-180px)] flex flex-col">
+                        <div class="flex items-center justify-between p-4 border-b border-slate-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl card-blue flex items-center justify-center">
+                                    <span class="text-xl">📶</span>
+                                </div>
+                                <div>
+                                    <h2 class="font-bold text-slate-800">HUAWEI Router</h2>
+                                    <p class="text-sm text-slate-500">100.10.10.1</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="fillPassword('huawei')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-sm font-medium transition flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                    Auto-login
+                                </button>
+                                <button onclick="reloadRouter('huawei')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-sm font-medium transition">Reload</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 p-4">
+                            <webview id="webview-huawei" src="http://100.10.10.1" class="w-full h-full border border-slate-200 rounded-xl"></webview>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-tenda1-detail" class="tab-content hidden">
+                    <div class="bg-white rounded-2xl border border-slate-200 h-[calc(100vh-180px)] flex flex-col">
+                        <div class="flex items-center justify-between p-4 border-b border-slate-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl card-green flex items-center justify-center">
+                                    <span class="text-xl">📶</span>
+                                </div>
+                                <div>
+                                    <h2 class="font-bold text-slate-800">Tenda Router 1</h2>
+                                    <p class="text-sm text-slate-500">100.10.10.3:8080</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="fillPassword('tenda1')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-sm font-medium transition flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                    Auto-login
+                                </button>
+                                <button onclick="reloadRouter('tenda1')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-sm font-medium transition">Reload</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 p-4">
+                            <webview id="webview-tenda1" src="http://100.10.10.3:8080" class="w-full h-full border border-slate-200 rounded-xl"></webview>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-tenda2-detail" class="tab-content hidden">
+                    <div class="bg-white rounded-2xl border border-slate-200 h-[calc(100vh-180px)] flex flex-col">
+                        <div class="flex items-center justify-between p-4 border-b border-slate-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl card-orange flex items-center justify-center">
+                                    <span class="text-xl">📶</span>
+                                </div>
+                                <div>
+                                    <h2 class="font-bold text-slate-800">Tenda Router 2</h2>
+                                    <p class="text-sm text-slate-500">100.10.10.4:8080</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="fillPassword('tenda2')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-sm font-medium transition flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                    Auto-login
+                                </button>
+                                <button onclick="reloadRouter('tenda2')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-sm font-medium transition">Reload</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 p-4">
+                            <webview id="webview-tenda2" src="http://100.10.10.4:8080" class="w-full h-full border border-slate-200 rounded-xl"></webview>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-camera-detail" class="tab-content hidden">
+                    <div class="bg-white rounded-2xl border border-slate-200 h-[calc(100vh-180px)] flex flex-col">
+                        <div class="flex items-center justify-between p-4 border-b border-slate-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl card-cyan flex items-center justify-center">
+                                    <span class="text-xl">📷</span>
+                                </div>
+                                <div>
+                                    <h2 class="font-bold text-slate-800">Security Camera</h2>
+                                    <p class="text-sm text-slate-500">100.10.10.2</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="fillPassword('camera')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-sm font-medium transition flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                    Auto-login
+                                </button>
+                                <button onclick="reloadRouter('camera')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-sm font-medium transition">Reload</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 p-4">
+                            <webview id="webview-camera" src="http://100.10.10.2" class="w-full h-full border border-slate-200 rounded-xl"></webview>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="tab-settings" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-6">Settings</h2>
+                    <div class="max-w-2xl space-y-4">
+                        <div class="bg-white rounded-2xl p-6 border border-slate-200">
+                            <h3 class="font-semibold text-slate-800 mb-4">Router Credentials</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg card-pink flex items-center justify-center">
+                                            <span class="text-lg">📡</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-slate-800">D-Link</p>
+                                            <p class="text-sm text-slate-500">10.1.10.1</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm text-slate-600">Password: <span class="password-field">••••••••</span><span class="password-value hidden">pxshr3ws</span></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg card-blue flex items-center justify-center">
+                                            <span class="text-lg">📶</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-slate-800">HUAWEI</p>
+                                            <p class="text-sm text-slate-500">100.10.10.1</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm text-slate-600">User: telecomadmin</p>
+                                        <p class="text-sm text-slate-600">Pass: <span class="password-field">••••••••</span><span class="password-value hidden">Syed#Alijah</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="toggle-passwords" class="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition">
+                                Show Passwords
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -443,20 +643,7 @@
     </div>
 
     <script>
-        // ============================================
-        // ROUTER CREDENTIALS (Static configuration)
-        // ============================================
-        
-        // To change credentials, edit the values here:
-        const ROUTER_CREDENTIALS = {
-            dlink: { username: '', password: 'pxshr3ws', hasUsername: false },
-            huawei: { username: 'telecomadmin', password: 'Syed#Alijah', hasUsername: true },
-            tenda1: { username: '', password: 'Tenda0', hasUsername: false },
-            tenda2: { username: '', password: 'Tenda0', hasUsername: false },
-            camera: { username: '', password: 'admin', hasUsername: false }
-        };
-        
-        // Router URLs for status check
+        // Router configuration
         const ROUTER_URLS = {
             dlink: 'http://10.1.10.1',
             huawei: 'http://100.10.10.1',
@@ -464,177 +651,213 @@
             tenda2: 'http://100.10.10.4:8080',
             camera: 'http://100.10.10.2'
         };
-        
-        // Check if a router is online
+
+        const ROUTER_CREDENTIALS = {
+            dlink: { password: 'pxshr3ws' },
+            huawei: { username: 'telecomadmin', password: 'Syed#Alijah' },
+            tenda1: { password: 'Tenda0' },
+            tenda2: { password: 'Tenda0' },
+            camera: { password: 'admin' }
+        };
+
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active from all sidebar items
+            document.querySelectorAll('.sidebar-item').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const tabId = tabName === 'dlink' || tabName === 'huawei' || tabName === 'tenda1' || tabName === 'tenda2' || tabName === 'camera' 
+                ? `tab-${tabName}-detail` 
+                : `tab-${tabName}`;
+            
+            const tab = document.getElementById(tabId);
+            if (tab) tab.classList.remove('hidden');
+            
+            // Set active button
+            const btn = document.getElementById(`btn-${tabName}`);
+            if (btn) btn.classList.add('active');
+        }
+
+        // Check router status
         async function checkRouterStatus(routerId, url) {
-            const led = document.getElementById('led-' + routerId);
+            const statusEl = document.getElementById(`status-${routerId}`);
+            const cardLedEl = document.getElementById(`card-led-${routerId}`);
+            const quickStatusEl = document.getElementById(`quick-status-${routerId}`);
             
-            // Special handling for camera router - use a different approach
-            if (routerId === 'camera') {
-                try {
-                    console.log(`[Router Kawaii] Checking camera status...`);
-                    
-                    // Create an image to test connectivity (works better with no-cors)
-                    const img = new Image();
-                    const timeout = setTimeout(() => {
-                        img.src = ''; // Cancel the request
-                        throw new Error('Camera timeout');
-                    }, 3000);
-                    
-                    // Try to load a common camera resource
-                    img.onload = () => {
-                        clearTimeout(timeout);
-                        if (led) {
-                            led.classList.remove('led-checking', 'led-offline');
-                            led.classList.add('led-online');
-                            console.log(`[Router Kawaii] Camera is ONLINE (image loaded)`);
-                        }
-                    };
-                    
-                    img.onerror = () => {
-                        clearTimeout(timeout);
-                        // Try fetch as fallback
-                        fetchCameraEndpoints(url, led);
-                    };
-                    
-                    // Try to load a small image from camera
-                    img.src = url + '/favicon.ico?' + Date.now();
-                    
-                    return true;
-                } catch (error) {
-                    console.log(`[Router Kawaii] Camera is OFFLINE:`, error.message);
-                    if (led) {
-                        led.classList.remove('led-checking', 'led-online');
-                        led.classList.add('led-offline');
-                    }
-                    return false;
-                }
-            }
-            
-            // Standard router check for non-camera devices
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 3000);
                 
-                const response = await fetch(url, { 
+                await fetch(url, { 
                     method: 'HEAD', 
                     mode: 'no-cors',
                     signal: controller.signal 
                 });
                 clearTimeout(timeoutId);
                 
-                // If we get here without error, router is reachable
-                if (led) {
-                    led.classList.remove('led-checking', 'led-offline');
-                    led.classList.add('led-online');
-                    console.log(`[Router Kawaii] ${routerId} is ONLINE`);
+                // Online
+                if (statusEl) {
+                    statusEl.classList.remove('status-checking', 'status-offline');
+                    statusEl.classList.add('status-online');
                 }
+                if (cardLedEl) {
+                    cardLedEl.classList.remove('status-checking', 'status-offline');
+                    cardLedEl.classList.add('status-online');
+                }
+                if (quickStatusEl) {
+                    quickStatusEl.classList.remove('bg-slate-400', 'bg-red-400');
+                    quickStatusEl.classList.add('bg-emerald-400');
+                }
+                
                 return true;
             } catch (error) {
-                // Router is offline
-                console.log(`[Router Kawaii] ${routerId} is OFFLINE:`, error.message);
-                if (led) {
-                    led.classList.remove('led-checking', 'led-online');
-                    led.classList.add('led-offline');
+                // Offline
+                if (statusEl) {
+                    statusEl.classList.remove('status-checking', 'status-online');
+                    statusEl.classList.add('status-offline');
                 }
+                if (cardLedEl) {
+                    cardLedEl.classList.remove('status-checking', 'status-online');
+                    cardLedEl.classList.add('status-offline');
+                }
+                if (quickStatusEl) {
+                    quickStatusEl.classList.remove('bg-slate-400', 'bg-emerald-400');
+                    quickStatusEl.classList.add('bg-red-400');
+                }
+                
                 return false;
             }
         }
-        
-        // Helper function for camera endpoint testing
-        async function fetchCameraEndpoints(url, led) {
-            try {
-                console.log(`[Router Kawaii] Trying camera endpoints...`);
-                const cameraEndpoints = [
-                    url,
-                    url + '/doc/',
-                    url + '/',
-                    url + '/index.html'
-                ];
-                
-                for (const endpoint of cameraEndpoints) {
-                    try {
-                        console.log(`[Router Kawaii] Checking camera endpoint: ${endpoint}`);
-                        await fetch(endpoint, { 
-                            method: 'GET', 
-                            mode: 'no-cors',
-                            signal: AbortSignal.timeout(2000)
-                        });
-                        
-                        // If we reach here, consider it successful
-                        if (led) {
-                            led.classList.remove('led-checking', 'led-offline');
-                            led.classList.add('led-online');
-                            console.log(`[Router Kawaii] Camera is ONLINE (endpoint: ${endpoint})`);
-                        }
-                        return true;
-                    } catch (e) {
-                        console.log(`[Router Kawaii] Camera endpoint failed: ${endpoint}`);
-                        continue;
+
+        // Check all routers
+        async function checkAllRouters() {
+            let onlineCount = 0;
+            const BASE_SPEED = 30; // Mbps per router
+            
+            for (const [routerId, url] of Object.entries(ROUTER_URLS)) {
+                const isOnline = await checkRouterStatus(routerId, url);
+                if (isOnline) onlineCount++;
+            }
+            
+            // Update network stats
+            const totalSpeed = onlineCount * BASE_SPEED;
+            document.getElementById('download-speed-display').textContent = totalSpeed + ' Mbps';
+            document.getElementById('upload-speed-display').textContent = Math.round(totalSpeed * 0.3) + ' Mbps';
+            document.getElementById('network-status-text').textContent = onlineCount + ' routers online';
+        }
+
+        // Auto-login
+        async function fillPassword(routerId) {
+            const webview = document.getElementById(`webview-${routerId}`);
+            const creds = ROUTER_CREDENTIALS[routerId];
+            
+            if (webview && creds) {
+                try {
+                    if (creds.username) {
+                        await webview.executeJavaScript(`
+                            document.querySelector('input[type="text"], input[name="username"], input[name="user"], input#username, input#user')?.value = '${creds.username}';
+                        `);
                     }
+                    await webview.executeJavaScript(`
+                        document.querySelector('input[type="password"], input[name="password"], input[name="pass"], input#password, input#pass')?.value = '${creds.password}';
+                    `);
+                } catch (e) {
+                    console.log('Auto-login failed:', e);
                 }
-                
-                // All endpoints failed
-                console.log(`[Router Kawaii] Camera is OFFLINE (all endpoints failed)`);
-                if (led) {
-                    led.classList.remove('led-checking', 'led-online');
-                    led.classList.add('led-offline');
-                }
-                return false;
-            } catch (error) {
-                console.log(`[Router Kawaii] Camera check failed:`, error.message);
-                if (led) {
-                    led.classList.remove('led-checking', 'led-online');
-                    led.classList.add('led-offline');
-                }
-                return false;
             }
         }
-        
-        // Network monitoring variables
-        let onlineRoutersCount = 0;
-        const BASE_SPEED_PER_ROUTER = 30; // 30 Mbps per router
-        
-        // Scan network for devices using D-Link router interface
-        async function scanNetworkDevices() {
-            try {
-                // Only scan if D-Link router is online (assuming it's the main router)
-                const dlinkLed = document.getElementById('led-dlink');
-                if (!dlinkLed || !dlinkLed.classList.contains('led-online')) {
-                    updateBandwidth();
-                    return;
-                }
-                
-                // Try to get device list from D-Link router web interface
-                const webview = document.getElementById('webview-dlink');
-                if (webview) {
+
+        function reloadRouter(routerId) {
+            const webview = document.getElementById(`webview-${routerId}`);
+            if (!webview) return;
+
+            const softReloadScript = `
+                (function() {
                     try {
-                        // Execute JavaScript in the D-Link webview to find connected devices
-                        const deviceCount = await webview.executeJavaScript(`
-                            (function() {
-                                // Look for device list in common D-Link interface locations
-                                const deviceSelectors = [
-                                    '.device-list tr',
-                                    '.connected-device tr',
-                                    '.dhcp-client tr',
-                                    'table.device-table tr',
-                                    '.client-list tr',
-                                    '[data-device]',
-                                    '.device-item'
-                                ];
-                                
-                                let maxDevices = 0;
-                                
-                                for (const selector of deviceSelectors) {
-                                    const elements = document.querySelectorAll(selector);
-                                    if (elements.length > 0) {
-                                        // Count actual devices (exclude header rows)
-                                        const deviceRows = Array.from(elements).filter(el => {
-                                            const text = el.textContent.toLowerCase();
-                                            return text.includes('192.168.') || 
-                                                   text.includes('10.0.') ||
-                                                   text.includes('mac') ||
-                                                   text.includes('device') ||
+                        const frameElements = Array.from(document.querySelectorAll('frame, iframe'));
+
+                        if (frameElements.length > 0) {
+                            let selectedFrame = null;
+                            let largestArea = -1;
+
+                            for (const frame of frameElements) {
+                                try {
+                                    const frameDoc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+                                    if (frameDoc && frameDoc.hasFocus && frameDoc.hasFocus()) {
+                                        selectedFrame = frame;
+                                        break;
+                                    }
+                                } catch (e) {}
+                            }
+
+                            if (!selectedFrame) {
+                                for (const frame of frameElements) {
+                                    const rect = frame.getBoundingClientRect();
+                                    const area = Math.max(0, rect.width) * Math.max(0, rect.height);
+                                    if (area > largestArea) {
+                                        largestArea = area;
+                                        selectedFrame = frame;
+                                    }
+                                }
+                            }
+
+                            if (selectedFrame && selectedFrame.contentWindow) {
+                                selectedFrame.contentWindow.location.reload();
+                                return 'frame';
+                            }
+                        }
+
+                        window.location.reload();
+                        return 'document';
+                    } catch (err) {
+                        return 'error:' + err.message;
+                    }
+                })();
+            `;
+
+            webview.executeJavaScript(softReloadScript).then(result => {
+                if (typeof result === 'string' && result.startsWith('error:')) {
+                    console.warn('[Router Kawaii] Soft reload failed, falling back to full webview reload:', result);
+                    webview.reload();
+                }
+            }).catch(err => {
+                console.warn('[Router Kawaii] Soft reload exception, falling back to full webview reload:', err);
+                webview.reload();
+            });
+        }
+
+        // Password visibility toggle
+        document.getElementById('toggle-passwords')?.addEventListener('click', function() {
+            const fields = document.querySelectorAll('.password-field');
+            const values = document.querySelectorAll('.password-value');
+            const isHidden = values[0]?.classList.contains('hidden');
+            
+            fields.forEach(f => f.classList.toggle('hidden'));
+            values.forEach(v => v.classList.toggle('hidden'));
+            
+            this.textContent = isHidden ? 'Hide Passwords' : 'Show Passwords';
+        });
+
+        // Window controls
+        function minimizeWindow() { if (window.electronAPI) window.electronAPI.minimize(); }
+        function maximizeWindow() { if (window.electronAPI) window.electronAPI.maximize(); }
+        function closeWindow() { if (window.electronAPI) window.electronAPI.close(); }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAllRouters();
+            setInterval(checkAllRouters, 30000); // Check every 30s
+        });
+    </script>
+</body>
+</html>
                                                    (text.match(/\d+\.\d+\.\d+\.\d+/) && !text.includes('router'));
                                         });
                                         maxDevices = Math.max(maxDevices, deviceRows.length);
@@ -843,9 +1066,67 @@
         }
         
         // Reload router webview by name
+        // Soft refresh first: reload active inner frame to avoid full-session resets on some router UIs.
         function reloadRouter(routerName) {
             const webview = document.getElementById('webview-' + routerName);
-            if (webview) webview.reload();
+            if (!webview) return;
+
+            const softReloadScript = `
+                (function() {
+                    try {
+                        const frameElements = Array.from(document.querySelectorAll('frame, iframe'));
+
+                        if (frameElements.length > 0) {
+                            let selectedFrame = null;
+                            let largestArea = -1;
+
+                            // Prefer the focused frame when available.
+                            for (const frame of frameElements) {
+                                try {
+                                    const frameDoc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+                                    if (frameDoc && frameDoc.hasFocus && frameDoc.hasFocus()) {
+                                        selectedFrame = frame;
+                                        break;
+                                    }
+                                } catch (e) {}
+                            }
+
+                            // Fallback to the largest frame (usually the main content frame).
+                            if (!selectedFrame) {
+                                for (const frame of frameElements) {
+                                    const rect = frame.getBoundingClientRect();
+                                    const area = Math.max(0, rect.width) * Math.max(0, rect.height);
+                                    if (area > largestArea) {
+                                        largestArea = area;
+                                        selectedFrame = frame;
+                                    }
+                                }
+                            }
+
+                            if (selectedFrame && selectedFrame.contentWindow) {
+                                selectedFrame.contentWindow.location.reload();
+                                return 'frame';
+                            }
+                        }
+
+                        // If router page has no frames, use normal in-page refresh.
+                        window.location.reload();
+                        return 'document';
+                    } catch (err) {
+                        return 'error:' + err.message;
+                    }
+                })();
+            `;
+
+            webview.executeJavaScript(softReloadScript).then(result => {
+                if (typeof result === 'string' && result.startsWith('error:')) {
+                    console.warn('[Router Kawaii] Soft reload failed, falling back to full webview reload:', result);
+                    webview.reload();
+                }
+            }).catch(err => {
+                console.warn('[Router Kawaii] Soft reload exception, falling back to full webview reload:', err);
+                webview.reload();
+            });
         }
         
         // Fill password for any router (manual trigger - no auto-submit)
